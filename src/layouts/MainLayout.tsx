@@ -59,10 +59,10 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             >
                 <Toolbar />
                 <List>
-                    <ListItem button onClick={() => handleNavigation('/')}>
+                    <ListItem component="button" onClick={() => handleNavigation('/')}>
                         <ListItemText primary="Dashboard" />
                     </ListItem>
-                    <ListItem button onClick={() => handleNavigation('/employees')}>
+                    <ListItem component="button" onClick={() => handleNavigation('/employees')}>
                         <ListItemText primary="Employees" />
                     </ListItem>
                 </List>
