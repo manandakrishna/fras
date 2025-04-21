@@ -1,0 +1,66 @@
+import React, { useEffect, useState } from 'react';
+import { DataGrid } from '@mui/x-data-grid';
+import { Button, Typography } from '@mui/material';
+import { getDailyAttendance, getWeeklySummary, getMonthlyOverview } from '../../services/api';
+
+const AttendanceMonitoring = () => {
+    const [dailyAttendance, setDailyAttendance] = useState([]);
+    const [weeklySummary, setWeeklySummary] = useState([]);
+    const [monthlyOverview, setMonthlyOverview] = useState([]);
+
+    useEffect(() => {
+        fetchDailyAttendance();
+        fetchWeeklySummary();
+        fetchMonthlyOverview();
+    }, []);
+
+    const fetchDailyAttendance = async () => {
+        const data = await getDailyAttendance();
+        setDailyAttendance(data);
+    };
+
+    const fetchWeeklySummary = async () => {
+        const data = await getWeeklySummary();
+        setWeeklySummary(data);
+    };
+
+    const fetchMonthlyOverview = async () => {
+        const data = await getMonthlyOverview();
+        setMonthlyOverview(data);
+    };
+
+    const columns = [
+        { field: 'id', headerName: 'ID', width: 90 },
+        { field: 'employeeName', headerName: 'Employee Name', width: 150 },
+        { field: 'clockIn', headerName: 'Clock In', width: 150 },
+        { field: 'clockOut', headerName: 'Clock Out', width: 150 },
+    ];
+
+    return (
+        <div>
+            <Typography variant="h4" gutterBottom>
+                Attendance Monitoring
+            </Typography>
+            <div style={{ height: 400, width: '100%', marginBottom: '20px' }}>
+                <DataGrid rows={dailyAttendance} columns={columns} pageSize={5} />
+            </div>
+            <Typography variant="h5" gutterBottom>
+                Weekly Summary
+            </Typography>
+            <div>
+                {/* Render weekly summary charts here */}
+            </div>
+            <Typography variant="h5" gutterBottom>
+                Monthly Overview
+            </Typography>
+            <div>
+                {/* Render monthly overview charts here */}
+            </div>
+            <Button variant="contained" color="primary" onClick={fetchDailyAttendance}>
+                Refresh Attendance Data
+            </Button>
+        </div>
+    );
+};
+
+export default AttendanceMonitoring;
