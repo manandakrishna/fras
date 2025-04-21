@@ -3,7 +3,7 @@ import { AppBar, Box, CssBaseline, Drawer, List, ListItem, ListItemText, Toolbar
 import MenuIcon from '@mui/icons-material/Menu';
 import { useRouter } from 'next/router';
 
-const drawerWidth = 240;
+const drawerWidth = 200;
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const router = useRouter();
@@ -75,7 +75,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     flexGrow: 1,
                     bgcolor: 'background.default',
                     p: 3,
-                    marginLeft: `${drawerWidth}px`,
+                    marginLeft: `20px`,
                     marginTop: '64px', // Adjust for AppBar height
                 }}
             >

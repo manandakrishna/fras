@@ -21,7 +21,6 @@ import AddIcon from '@mui/icons-material/Add';
 import MainLayout from '../layouts/MainLayout';
 
 const EmployeesPage = () => {
-    // Mock employee data
     const [employees, setEmployees] = useState([
         { id: 1, name: 'John Doe', phone: '123-456-7890', enrollStatus: true, status: 'Active', terminated: false },
         { id: 2, name: 'Jane Smith', phone: '987-654-3210', enrollStatus: false, status: 'Inactive', terminated: false },
@@ -29,11 +28,8 @@ const EmployeesPage = () => {
         { id: 4, name: 'Bob Brown', phone: '444-555-6666', enrollStatus: false, status: 'Inactive', terminated: false },
     ]);
 
-    // Pagination state
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-
-    // Drawer state
     const [selectedRow, setSelectedRow] = useState<{
         id: number;
         name: string;
@@ -44,7 +40,6 @@ const EmployeesPage = () => {
     } | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-    // Handle pagination
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
     };
@@ -54,19 +49,16 @@ const EmployeesPage = () => {
         setPage(0);
     };
 
-    // Handle row click
     const handleRowClick = (row: any) => {
-        setSelectedRow({ ...row }); // Clone the row to allow editing
+        setSelectedRow({ ...row });
         setIsDrawerOpen(true);
     };
 
-    // Handle drawer close
     const handleDrawerClose = () => {
         setIsDrawerOpen(false);
         setSelectedRow(null);
     };
 
-    // Handle save changes
     const handleSave = () => {
         if (selectedRow) {
             setEmployees((prevEmployees) =>
@@ -80,7 +72,7 @@ const EmployeesPage = () => {
 
     return (
         <MainLayout>
-            <Box sx={{ padding: 0 }}>
+            <Box sx={{ padding: 0 }}> {/* Removed extra padding */}
                 <Typography variant="h4" gutterBottom>
                     Employee Management
                 </Typography>
@@ -95,7 +87,6 @@ const EmployeesPage = () => {
                     </Button>
                 </Toolbar>
 
-                {/* Material UI Table */}
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
@@ -131,7 +122,6 @@ const EmployeesPage = () => {
                     </Table>
                 </TableContainer>
 
-                {/* Pagination */}
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
@@ -142,13 +132,12 @@ const EmployeesPage = () => {
                     onRowsPerPageChange={handleChangeRowsPerPage}
                 />
 
-                {/* Drawer */}
                 <Drawer
                     anchor="right"
                     open={isDrawerOpen}
                     onClose={handleDrawerClose}
                     PaperProps={{
-                        sx: { marginTop: '64px', width: 300 }, // Adjust drawer to be below the top bar
+                        sx: { marginTop: '64px', width: 300 },
                     }}
                 >
                     <Box sx={{ padding: 2 }}>
