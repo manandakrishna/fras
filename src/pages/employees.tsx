@@ -34,7 +34,14 @@ const EmployeesPage = () => {
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
     // Drawer state
-    const [selectedRow, setSelectedRow] = useState(null);
+    const [selectedRow, setSelectedRow] = useState<{
+        id: number;
+        name: string;
+        phone: string;
+        enrollStatus: boolean;
+        status: string;
+        terminated: boolean;
+    } | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     // Handle pagination
@@ -61,11 +68,13 @@ const EmployeesPage = () => {
 
     // Handle save changes
     const handleSave = () => {
-        setEmployees((prevEmployees) =>
-            prevEmployees.map((employee) =>
-                employee.id === selectedRow.id ? selectedRow : employee
-            )
-        );
+        if (selectedRow) {
+            setEmployees((prevEmployees) =>
+                prevEmployees.map((employee) =>
+                    employee.id === selectedRow.id ? selectedRow : employee
+                )
+            );
+        }
         handleDrawerClose();
     };
 
@@ -187,7 +196,7 @@ const EmployeesPage = () => {
                                         Save
                                     </Button>
                                     <Button variant="outlined" color="secondary" onClick={handleDrawerClose}>
-                                        Cancel
+                                        Cancel3
                                     </Button>
                                 </Box>
                             </>
