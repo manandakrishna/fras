@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -12,67 +12,109 @@ import {
     TableRow,
     Paper,
     TablePagination,
-    Drawer,
+    Modal,
     TextField,
-    Checkbox,
-    FormControlLabel,
+    Snackbar,
+    Alert,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MainLayout from '../layouts/MainLayout';
+import { getEmployees, addEmployee } from '@/services/api';
 
 const EmployeesPage = () => {
-    const [employees, setEmployees] = useState([
-        { id: 1, name: 'John Doe', phone: '123-456-7890', enrollStatus: true, status: 'Active', terminated: false },
-        { id: 2, name: 'Jane Smith', phone: '987-654-3210', enrollStatus: false, status: 'Inactive', terminated: false },
-        { id: 3, name: 'Alice Johnson', phone: '555-123-4567', enrollStatus: true, status: 'Active', terminated: false },
-        { id: 4, name: 'Bob Brown', phone: '444-555-6666', enrollStatus: false, status: 'Inactive', terminated: false },
-    ]);
-
+    const [employees, setEmployees] = useState<
+        { employee_id: number; name: string; phone_number: string; created_on: string; enroll_status: string; emp_status: string }[]
+    >([]);
+    const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [selectedRow, setSelectedRow] = useState<{
-        id: number;
-        name: string;
-        phone: string;
-        enrollStatus: boolean;
-        status: string;
-        terminated: boolean;
-    } | null>(null);
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal
+    const [selectedEmployee, setSelectedEmployee] = useState<{ name: string; phone_number: string } | null>(null); // Selected employee for editing
+    const [newEmployee, setNewEmployee] = useState({ name: '', phone: '' });
+    const [errors, setErrors] = useState({ name: false, phone: false });
+    const [isAdding, setIsAdding] = useState(false); // State to freeze the modal during API call
+    const [nextEmployeeId, setNextEmployeeId] = useState(1); // Variable to store the next employee ID
+    const [snackbarOpen, setSnackbarOpen] = useState(false); // State to control Snackbar visibility
 
-    const handleChangePage = (event: unknown, newPage: number) => {
-        setPage(newPage);
+    // Fetch employees from API
+    const fetchEmployees = async () => {
+        try {
+            const response = await getEmployees();
+            console.log('API Response:', response); // Log the raw API response
+
+            // Normalize the response to always be an array
+            const employeesData = Array.isArray(response) ? response : [response];
+            console.log('Normalized Employees Data:', employeesData); // Log the normalized employees data
+
+            // Set the employees state
+            setEmployees(employeesData);
+        } catch (error) {
+            console.error('Failed to fetch employees:', error);
+            setEmployees([]); // Fallback to an empty array on error
+        } finally {
+            setLoading(false); // Ensure loading is set to false
+        }
     };
 
-    const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
+    useEffect(() => {
+        fetchEmployees();
+    }, []);
+
+    // Handle modal open for adding a new employee
+    const handleOpenModal = () => {
+        const rowCount = employees.length;
+        const nextId = rowCount > 0 ? employees[rowCount - 1].employee_id + 1 : 1;
+        setNextEmployeeId(nextId);
+
+        setNewEmployee({ name: '', phone: '' });
+        setErrors({ name: false, phone: false });
+        setIsModalOpen(true);
     };
 
-    const handleRowClick = (row: any) => {
-        setSelectedRow({ ...row });
-        setIsDrawerOpen(true);
+    // Handle modal close
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
     };
 
-    const handleDrawerClose = () => {
-        setIsDrawerOpen(false);
-        setSelectedRow(null);
+    // Handle Snackbar close
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
     };
 
-    const handleSave = () => {
-        if (selectedRow) {
+    // Handle row click to open edit modal
+    const handleRowClick = (employee: { name: string; phone_number: string }) => {
+        setSelectedEmployee(employee);
+        setIsEditModalOpen(true);
+    };
+
+    // Handle edit modal close
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedEmployee(null);
+    };
+
+    // Handle save changes in edit modal
+    const handleSaveEdit = () => {
+        if (selectedEmployee) {
             setEmployees((prevEmployees) =>
                 prevEmployees.map((employee) =>
-                    employee.id === selectedRow.id ? selectedRow : employee
+                    employee.name === selectedEmployee.name
+                        ? { ...employee, phone_number: selectedEmployee.phone_number }
+                        : employee
                 )
             );
+            handleCloseEditModal();
         }
-        handleDrawerClose();
     };
+
+    if (loading) {
+        return <Typography>Loading...</Typography>;
+    }
 
     return (
         <MainLayout>
-            <Box sx={{ padding: 0 }}> {/* Removed extra padding */}
+            <Box sx={{ padding: 0 }}>
                 <Typography variant="h4" gutterBottom>
                     Employee Management
                 </Typography>
@@ -82,6 +124,7 @@ const EmployeesPage = () => {
                         color="primary"
                         startIcon={<AddIcon />}
                         sx={{ marginRight: 2 }}
+                        onClick={handleOpenModal}
                     >
                         Add Employee
                     </Button>
@@ -99,25 +142,27 @@ const EmployeesPage = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {employees
-                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((employee) => (
+                            {employees.length > 0 ? (
+                                employees.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((employee) => (
                                     <TableRow
-                                        key={employee.id}
-                                        hover
-                                        onClick={() => handleRowClick(employee)}
-                                        sx={{
-                                            cursor: 'pointer',
-                                            backgroundColor: selectedRow?.id === employee.id ? 'rgba(0, 123, 255, 0.1)' : 'inherit',
-                                        }}
+                                        key={employee.employee_id}
+                                        onClick={() => handleRowClick(employee)} // Open edit modal on row click
+                                        sx={{ cursor: 'pointer' }}
                                     >
-                                        <TableCell>{employee.id}</TableCell>
+                                        <TableCell>{employee.employee_id}</TableCell>
                                         <TableCell>{employee.name}</TableCell>
-                                        <TableCell>{employee.phone}</TableCell>
-                                        <TableCell>{employee.enrollStatus ? 'Enrolled' : 'Not Enrolled'}</TableCell>
-                                        <TableCell>{employee.status}</TableCell>
+                                        <TableCell>{employee.phone_number}</TableCell>
+                                        <TableCell>{employee.enroll_status}</TableCell>
+                                        <TableCell>{employee.emp_status}</TableCell>
                                     </TableRow>
-                                ))}
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={5} align="center">
+                                        No employees found.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -128,70 +173,69 @@ const EmployeesPage = () => {
                     count={employees.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    onPageChange={(event, newPage) => setPage(newPage)}
+                    onRowsPerPageChange={(event) => {
+                        setRowsPerPage(parseInt(event.target.value, 10));
+                        setPage(0);
+                    }}
                 />
 
-                <Drawer
-                    anchor="right"
-                    open={isDrawerOpen}
-                    onClose={handleDrawerClose}
-                    PaperProps={{
-                        sx: { marginTop: '64px', width: 300 },
-                    }}
+                {/* Edit Modal */}
+                <Modal
+                    open={isEditModalOpen}
+                    onClose={handleCloseEditModal} // Close modal when clicked outside
+                    aria-labelledby="edit-employee-modal"
+                    aria-describedby="edit-employee-modal-description"
                 >
-                    <Box sx={{ padding: 2 }}>
-                        <Typography variant="h6" gutterBottom>
-                            Employee Details
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: 400,
+                            bgcolor: 'background.paper',
+                            boxShadow: 24,
+                            p: 4,
+                            borderRadius: 2,
+                        }}
+                    >
+                        <Typography id="edit-employee-modal" variant="h6" component="h2" gutterBottom>
+                            Edit Employee
                         </Typography>
-                        {selectedRow && (
-                            <>
-                                <TextField
-                                    label="Phone Number"
-                                    fullWidth
-                                    margin="normal"
-                                    value={selectedRow.phone}
-                                    onChange={(e) =>
-                                        setSelectedRow({ ...selectedRow, phone: e.target.value })
-                                    }
-                                />
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={selectedRow.enrollStatus}
-                                            onChange={(e) =>
-                                                setSelectedRow({ ...selectedRow, enrollStatus: e.target.checked })
-                                            }
-                                        />
-                                    }
-                                    label="Enrolled"
-                                />
-                                <Typography variant="body1" sx={{ marginTop: 2 }}>
-                                    <strong>Employee Status:</strong> {selectedRow.status}
-                                </Typography>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={selectedRow.terminated}
-                                            onChange={(e) =>
-                                                setSelectedRow({ ...selectedRow, terminated: e.target.checked })
-                                            }
-                                        />
-                                    }
-                                    label="Terminated"
-                                />
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
-                                    <Button variant="contained" color="primary" onClick={handleSave}>
-                                        Save
-                                    </Button>
-                                    <Button variant="outlined" color="secondary" onClick={handleDrawerClose}>
-                                        Cancel
-                                    </Button>
-                                </Box>
-                            </>
-                        )}
+                        <TextField
+                            label="Name"
+                            fullWidth
+                            margin="normal"
+                            value={selectedEmployee?.name || ''}
+                            disabled // Name is not editable
+                        />
+                        <TextField
+                            label="Phone Number"
+                            fullWidth
+                            margin="normal"
+                            value={selectedEmployee?.phone_number || ''}
+                            onChange={(e) =>
+                                setSelectedEmployee((prev) =>
+                                    prev ? { ...prev, phone_number: e.target.value } : null
+                                )
+                            }
+                        />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', marginTop: 2 }}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleSaveEdit}
+                                sx={{ marginBottom: 2 }}
+                            >
+                                Save
+                            </Button>
+                            <Button variant="outlined" color="secondary" onClick={handleCloseEditModal}>
+                                Cancel
+                            </Button>
+                        </Box>
                     </Box>
-                </Drawer>
+                </Modal>
             </Box>
         </MainLayout>
     );
