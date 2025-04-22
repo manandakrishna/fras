@@ -7,7 +7,7 @@ const API_Add_EMPLOYEE_URL = `https://primary-production-c175.up.railway.app/web
 export const getEmployees = async () => {
     try {
         const response = await axios.get(`${API_BASE_URL}`);
-        console.log('Response:', response.data); // Log the response data
+
         if (Array.isArray(response.data)) {
             return response.data; // Return all rows if the response is an array
         } else {
