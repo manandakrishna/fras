@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'https://primary-production-c175.up.railway.app/webhook/4e81377d-c913-4767-a9a3-fae2d5a0aed6';
 const API_Add_EMPLOYEE_URL = `https://primary-production-c175.up.railway.app/webhook/be0da3f2-4faa-4023-89d1-060f54c889c5`;
+const API_Edit_EMPLOYEE_URL = `https://primary-production-c175.up.railway.app/webhook/278ff182-b8df-4c06-99d9-48793a83f845`;
 
 
 export const getEmployees = async () => {
@@ -31,15 +32,15 @@ export const addEmployee = async (employee: { employee_id: number; name: string;
 };
 
 
-// export const editEmployee = async (employeeId, employeeData) => {
-//     try {
-//         const response = await axios.put(`${API_BASE_URL}/employeeManagement/editEmployee`, { employeeId, ...employeeData });
-//         return response.data;
-//     } catch (error) {
-//         console.error('Error editing employee:', error);
-//         throw error;
-//     }
-// };
+export const editEmployee = async (employeeId: number, { enroll_status, emp_status, phone_number }: { enroll_status: string; emp_status: string; phone_number: string }) => {
+    try {
+        const response = await axios.put(`${API_Edit_EMPLOYEE_URL}`, { employeeId, enroll_status, emp_status, phone_number });
+        return response.data;
+    } catch (error) {
+        console.error('Error editing employee:', error);
+        throw error;
+    }
+};
 
 // export const disableEmployee = async (employeeId) => {
 //     try {

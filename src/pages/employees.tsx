@@ -19,7 +19,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MainLayout from '../layouts/MainLayout';
-import { getEmployees, addEmployee } from '@/services/api';
+import { getEmployees, addEmployee, editEmployee } from '@/services/api';
 
 const EmployeesPage = () => {
     const [employees, setEmployees] = useState<
@@ -32,20 +32,23 @@ const EmployeesPage = () => {
     const [newEmployee, setNewEmployee] = useState({ name: '', phone: '' });
     const [errors, setErrors] = useState({ name: false, phone: false });
     const [isAdding, setIsAdding] = useState(false); // State to freeze the modal during API call
+    const [isEditing, setIsEditing] = useState(false); // State to freeze the modal during API call
     const [nextEmployeeId, setNextEmployeeId] = useState(1); // Variable to store the next employee ID
-    const [snackbarOpen, setSnackbarOpen] = useState(false); // State to control Snackbar visibility
+    const [snackbarNewEmployeeOpen, setSnackNewEmployeebarOpen] = useState(false); // State to control Snackbar visibility
+    const [snackbarEditEmployeeOpen, setSnackEditEmployeebarOpen] = useState(false); // State to control Snackbar visibility
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal
+    const [selectedEmployee, setSelectedEmployee] = useState<{ employee_id: number; phone_number: string } | null>(null); // Selected employee for editing
+    const [snackbarEditSuccessOpen, setSnackbarEditSuccessOpen] = useState(false); // State to control Snackbar visibility for edit success
 
     // Fetch employees from API
     const fetchEmployees = async () => {
         try {
             const response = await getEmployees();
-            console.log('API Response:', response); // Log the raw API response
-
-            // Normalize the response to always be an array
             const employeesData = Array.isArray(response) ? response : [response];
-            console.log('Normalized Employees Data:', employeesData); // Log the normalized employees data
 
-            // Set the employees state
+            // Sort employees by employee_id
+            employeesData.sort((a, b) => a.employee_id - b.employee_id);
+
             setEmployees(employeesData);
         } catch (error) {
             console.error('Failed to fetch employees:', error);
@@ -59,19 +62,28 @@ const EmployeesPage = () => {
         fetchEmployees();
     }, []);
 
-    // Handle modal open
-    const handleOpenModal = () => {
+    // Handle modal open for adding a new employee
+    const handleOpenAddEmployeeModal = () => {
         // Calculate the next employee ID based on the number of rows
         const rowCount = employees.length;
         const nextId = rowCount > 0 ? employees[rowCount - 1].employee_id + 1 : 1;
-        setNextEmployeeId(nextId);
+        setNextEmployeeId(nextId); // Update nextEmployeeId only for Add Employee
 
         // Reset fields and errors
         setNewEmployee({ name: '', phone: '' });
         setErrors({ name: false, phone: false });
 
-        // Open the modal
+        // Open the Add Employee modal
         setIsModalOpen(true);
+    };
+
+    // Handle modal open for editing an employee
+    const handleOpenEditEmployeeModal = (employee: { employee_id: number; phone_number: string }) => {
+        // Set the selected employee for editing
+        setSelectedEmployee(employee);
+
+        // Open the Edit Employee modal
+        setIsEditModalOpen(true);
     };
 
     // Handle modal close
@@ -80,12 +92,12 @@ const EmployeesPage = () => {
     };
 
     // Handle Snackbar close
-    const handleSnackbarClose = () => {
-        setSnackbarOpen(false);
+    const handleNewEmployeesSnackbarClose = () => {
+        setSnackNewEmployeebarOpen(false);
     };
 
     // Handle save new employee
-    const handleSaveEmployee = async () => {
+    const handleSaveNewEmployee = async () => {
         const { name, phone } = newEmployee;
 
         // Validate fields
@@ -126,11 +138,61 @@ const EmployeesPage = () => {
                 handleCloseModal();
 
                 // Show success Snackbar
-                setSnackbarOpen(true);
+                setSnackNewEmployeebarOpen(true);
             } catch (error) {
                 console.error('Failed to add employee:', error);
             } finally {
                 setIsAdding(false); // Unfreeze the modal
+            }
+        }
+
+    };
+
+    // Handle row click to open edit modal
+    const handleRowClick = (employee: { employee_id: number; phone_number: string }) => {
+        handleOpenEditEmployeeModal(employee);
+    };
+
+    // Handle edit modal close
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedEmployee(null);
+    };
+
+    // Handle save changes in edit modal
+    const handleSaveEdit = async () => {
+        if (selectedEmployee) {
+            setIsEditing(true); // Freeze the modal
+            try {
+                await editEmployee(
+                    selectedEmployee.employee_id,
+                    {
+                        phone_number: selectedEmployee.phone_number,
+                        enroll_status: employees.find(emp => emp.employee_id === selectedEmployee.employee_id)?.enroll_status || 'New',
+                        emp_status: employees.find(emp => emp.employee_id === selectedEmployee.employee_id)?.emp_status || 'Active',
+                    }
+                );
+
+                // Update the local state with the edited employee
+                setEmployees((prevEmployees) =>
+                    prevEmployees.map((employee) =>
+                        employee.employee_id === selectedEmployee.employee_id
+                            ? {
+                                  ...employee,
+                                  phone_number: selectedEmployee.phone_number,
+                              }
+                            : employee
+                    )
+                );
+
+                handleCloseEditModal();
+
+                // Show success Snackbar for "Saved Changes"
+                setSnackbarEditSuccessOpen(true);
+            } catch (error) {
+                console.error('Failed to update employee:', error);
+            } finally {
+                setIsEditing(false); // Unfreeze the modal
             }
         }
     };
@@ -151,7 +213,7 @@ const EmployeesPage = () => {
                         color="primary"
                         startIcon={<AddIcon />}
                         sx={{ marginRight: 2 }}
-                        onClick={handleOpenModal}
+                        onClick={handleOpenAddEmployeeModal}
                     >
                         Add Employee
                     </Button>
@@ -169,17 +231,16 @@ const EmployeesPage = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {employees.length > 0 ? (
-                                employees.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((employee) => (
-                                    <TableRow key={employee.employee_id}>
-                                        <TableCell>{employee.employee_id}</TableCell>
-                                        <TableCell>{employee.name}</TableCell>
-                                        <TableCell>{employee.phone_number}</TableCell>
-                                        <TableCell>{employee.enroll_status}</TableCell>
-                                        <TableCell>{employee.emp_status}</TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
+                            {employees.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((employee) => (
+                                <TableRow key={employee.employee_id} onClick={() => handleRowClick(employee)}>
+                                    <TableCell>{employee.employee_id}</TableCell>
+                                    <TableCell>{employee.name}</TableCell>
+                                    <TableCell>{employee.phone_number}</TableCell>
+                                    <TableCell>{employee.enroll_status}</TableCell>
+                                    <TableCell>{employee.emp_status}</TableCell>
+                                </TableRow>
+                            ))}
+                            {employees.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} align="center">
                                         No employees found.
@@ -198,7 +259,7 @@ const EmployeesPage = () => {
                     page={page}
                     onPageChange={(event, newPage) => setPage(newPage)}
                     onRowsPerPageChange={(event) => {
-                        setRowsPerPage(parseInt(event.target.value, 20));
+                        setRowsPerPage(parseInt(event.target.value, 10));
                         setPage(0);
                     }}
                 />
@@ -254,7 +315,7 @@ const EmployeesPage = () => {
                             <Button
                                 variant="contained"
                                 color="primary"
-                                onClick={handleSaveEmployee}
+                                onClick={handleSaveNewEmployee}
                                 disabled={isAdding} // Disable button while adding
                             >
                                 {isAdding ? 'Adding Employee...' : 'Save'}
@@ -272,15 +333,101 @@ const EmployeesPage = () => {
                     </Box>
                 </Modal>
 
+                {/* Modal for Editing Employee */}
+                <Modal
+                    open={isEditModalOpen}
+                    onClose={() => {
+                        if (!isEditing) {
+                            handleCloseEditModal(); // Only close the modal if not editing
+                        }
+                    }}
+                    aria-labelledby="edit-employee-modal"
+                    aria-describedby="edit-employee-modal-description"
+                    BackdropProps={{
+                        style: { pointerEvents: isEditing ? 'none' : 'auto' }, // Disable backdrop clicks while editing
+                    }}
+                >
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: 400,
+                            bgcolor: 'background.paper',
+                            boxShadow: 24,
+                            p: 4,
+                            borderRadius: 2,
+                        }}
+                    >
+                        <Typography id="edit-employee-modal" variant="h6" component="h2" gutterBottom>
+                            Edit Employee
+                        </Typography>
+                        {selectedEmployee && (
+                            <>
+                                <TextField
+                                    label="Employee ID"
+                                    fullWidth
+                                    margin="normal"
+                                    value={selectedEmployee.employee_id}
+                                    disabled // Disable editing by default
+                                />
+                                <TextField
+                                    label="Phone Number"
+                                    fullWidth
+                                    margin="normal"
+                                    value={selectedEmployee.phone_number}
+                                    onChange={(e) =>
+                                        setSelectedEmployee({ ...selectedEmployee, phone_number: e.target.value })
+                                    }
+                                    disabled={isEditing}  // Disable editing by default
+                                />
+                            </>
+                        )}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', marginTop: 2 }}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={handleSaveEdit}
+                                disabled={isEditing} 
+                            >
+                                {isEditing ? 'Editing Employee...' : 'Save'}
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="secondary"
+                                onClick={handleCloseEditModal}
+                                sx={{ marginTop: 2 }}
+                                disabled={isEditing} 
+                            >
+                                Cancel
+                            </Button>
+   
+                        </Box>
+                    </Box>
+                </Modal>
+
                 {/* Snackbar for Success Message */}
                 <Snackbar
-                    open={snackbarOpen}
+                    open={snackbarNewEmployeeOpen}
                     autoHideDuration={3000} // Close after 3 seconds
-                    onClose={handleSnackbarClose}
+                    onClose={handleNewEmployeesSnackbarClose}
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
                 >
-                    <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+                    <Alert onClose={handleNewEmployeesSnackbarClose} severity="success" sx={{ width: '100%' }}>
                         Employee Added Successfully
+                    </Alert>
+                </Snackbar>
+
+                {/* Snackbar for Edit Success Message */}
+                <Snackbar
+                    open={snackbarEditSuccessOpen}
+                    autoHideDuration={3000} // Close after 3 seconds
+                    onClose={() => setSnackbarEditSuccessOpen(false)}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                >
+                    <Alert onClose={() => setSnackbarEditSuccessOpen(false)} severity="success" sx={{ width: '100%' }}>
+                        Changes Saved Successfully
                     </Alert>
                 </Snackbar>
             </Box>
