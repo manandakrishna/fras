@@ -1,26 +1,35 @@
-// import axios from 'axios';
+import axios from 'axios';
 
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://your-api-url.azurewebsites.net/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'https://primary-production-c175.up.railway.app/webhook/4e81377d-c913-4767-a9a3-fae2d5a0aed6';
+const API_Add_EMPLOYEE_URL = `https://primary-production-c175.up.railway.app/webhook/be0da3f2-4faa-4023-89d1-060f54c889c5`;
 
-// export const getEmployees = async () => {
-//     try {
-//         const response = await axios.get(`${API_BASE_URL}/employeeManagement/getEmployees`);
-//         return response.data;
-//     } catch (error) {
-//         console.error('Error fetching employees:', error);
-//         throw error;
-//     }
-// };
 
-// export const addEmployee = async (employeeData) => {
-//     try {
-//         const response = await axios.post(`${API_BASE_URL}/employeeManagement/addEmployee`, employeeData);
-//         return response.data;
-//     } catch (error) {
-//         console.error('Error adding employee:', error);
-//         throw error;
-//     }
-// };
+export const getEmployees = async () => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}`);
+        console.log('Response:', response.data); // Log the response data
+        if (Array.isArray(response.data)) {
+            return response.data; // Return all rows if the response is an array
+        } else {
+            console.warn('Unexpected response format:', response.data);
+            return [response.data]; // Wrap single object in an array as a fallback
+        }
+    } catch (error) {
+        console.error('Error fetching employees:', error);
+        throw error;
+    }
+};
+
+export const addEmployee = async (employee: { employee_id: number; name: string; phone_number: string; created_on: string }) => {
+    try {
+        const response = await axios.post(`${API_Add_EMPLOYEE_URL}`, employee);
+        return response.data; // Return the created employee data
+    } catch (error) {
+        console.error('Error adding employee:', error);
+        throw error;
+    }
+};
+
 
 // export const editEmployee = async (employeeId, employeeData) => {
 //     try {
