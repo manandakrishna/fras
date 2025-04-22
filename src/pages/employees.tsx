@@ -37,7 +37,7 @@ const EmployeesPage = () => {
     const [snackbarNewEmployeeOpen, setSnackNewEmployeebarOpen] = useState(false); // State to control Snackbar visibility
     const [snackbarEditEmployeeOpen, setSnackEditEmployeebarOpen] = useState(false); // State to control Snackbar visibility
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal
-    const [selectedEmployee, setSelectedEmployee] = useState<{ employee_id: number; phone_number: string } | null>(null); // Selected employee for editing
+    const [selectedEmployee, setSelectedEmployee] = useState<{ employee_id: number; phone_number: string; emp_status: string; enroll_status: string;} | null>(null); // Selected employee for editing
     const [snackbarEditSuccessOpen, setSnackbarEditSuccessOpen] = useState(false); // State to control Snackbar visibility for edit success
 
     // Fetch employees from API
@@ -78,9 +78,9 @@ const EmployeesPage = () => {
     };
 
     // Handle modal open for editing an employee
-    const handleOpenEditEmployeeModal = (employee: { employee_id: number; phone_number: string }) => {
+    const handleOpenEditEmployeeModal = (employee: { employee_id: number; phone_number: string; emp_status: string }) => {
         // Set the selected employee for editing
-        setSelectedEmployee(employee);
+        setSelectedEmployee({ ...employee, enroll_status: 'New' }); // Provide a default value for enroll_status
 
         // Open the Edit Employee modal
         setIsEditModalOpen(true);
@@ -149,7 +149,7 @@ const EmployeesPage = () => {
     };
 
     // Handle row click to open edit modal
-    const handleRowClick = (employee: { employee_id: number; phone_number: string }) => {
+    const handleRowClick = (employee: { employee_id: number; phone_number: string; emp_status: string }) => {
         handleOpenEditEmployeeModal(employee);
     };
 
@@ -161,6 +161,7 @@ const EmployeesPage = () => {
 
     // Handle save changes in edit modal
     const handleSaveEdit = async () => {
+        console.log('Selected Employee:', selectedEmployee);
         if (selectedEmployee) {
             setIsEditing(true); // Freeze the modal
             try {
@@ -168,8 +169,8 @@ const EmployeesPage = () => {
                     selectedEmployee.employee_id,
                     {
                         phone_number: selectedEmployee.phone_number,
-                        enroll_status: employees.find(emp => emp.employee_id === selectedEmployee.employee_id)?.enroll_status || 'New',
-                        emp_status: employees.find(emp => emp.employee_id === selectedEmployee.employee_id)?.emp_status || 'Active',
+                        enroll_status: selectedEmployee.enroll_status,
+                        emp_status: selectedEmployee.emp_status,
                     }
                 );
 
@@ -180,6 +181,7 @@ const EmployeesPage = () => {
                             ? {
                                   ...employee,
                                   phone_number: selectedEmployee.phone_number,
+                                  emp_status: selectedEmployee.emp_status,
                               }
                             : employee
                     )
@@ -370,7 +372,7 @@ const EmployeesPage = () => {
                                     fullWidth
                                     margin="normal"
                                     value={selectedEmployee.employee_id}
-                                    disabled // Disable editing by default
+                                    disabled // Employee ID is not editable
                                 />
                                 <TextField
                                     label="Phone Number"
@@ -380,8 +382,22 @@ const EmployeesPage = () => {
                                     onChange={(e) =>
                                         setSelectedEmployee({ ...selectedEmployee, phone_number: e.target.value })
                                     }
-                                    disabled={isEditing}  // Disable editing by default
+                                    disabled={isEditing} // Disable editing while saving
                                 />
+                                <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
+                                    <Typography sx={{ marginRight: 2 }}>Terminate?</Typography>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedEmployee.emp_status === 'Terminated'}
+                                        disabled={selectedEmployee.emp_status === 'Terminated'} // Disable if already terminated
+                                        onChange={(e) =>
+                                            setSelectedEmployee({
+                                                ...selectedEmployee,
+                                                emp_status: e.target.checked ? 'Terminated' : 'Active',
+                                            })
+                                        }
+                                    />
+                                </Box>
                             </>
                         )}
                         <Box sx={{ display: 'flex', flexDirection: 'column', marginTop: 2 }}>
@@ -389,7 +405,7 @@ const EmployeesPage = () => {
                                 variant="contained"
                                 color="primary"
                                 onClick={handleSaveEdit}
-                                disabled={isEditing} 
+                                disabled={isEditing}
                             >
                                 {isEditing ? 'Editing Employee...' : 'Save'}
                             </Button>
@@ -398,11 +414,10 @@ const EmployeesPage = () => {
                                 color="secondary"
                                 onClick={handleCloseEditModal}
                                 sx={{ marginTop: 2 }}
-                                disabled={isEditing} 
+                                disabled={isEditing}
                             >
                                 Cancel
                             </Button>
-   
                         </Box>
                     </Box>
                 </Modal>
