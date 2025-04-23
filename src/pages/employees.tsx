@@ -78,9 +78,9 @@ const EmployeesPage = () => {
     };
 
     // Handle modal open for editing an employee
-    const handleOpenEditEmployeeModal = (employee: { employee_id: number; phone_number: string; emp_status: string }) => {
+    const handleOpenEditEmployeeModal = (employee: { employee_id: number; phone_number: string; emp_status: string; enroll_status: string }) => {
         // Set the selected employee for editing
-        setSelectedEmployee({ ...employee, enroll_status: 'New' }); // Provide a default value for enroll_status
+        setSelectedEmployee(employee); // Use the enroll_status directly from the employee object
 
         // Open the Edit Employee modal
         setIsEditModalOpen(true);
@@ -149,7 +149,7 @@ const EmployeesPage = () => {
     };
 
     // Handle row click to open edit modal
-    const handleRowClick = (employee: { employee_id: number; phone_number: string; emp_status: string }) => {
+    const handleRowClick = (employee: { employee_id: number; phone_number: string; emp_status: string; enroll_status: string }) => {
         handleOpenEditEmployeeModal(employee);
     };
 
@@ -165,7 +165,8 @@ const EmployeesPage = () => {
         if (selectedEmployee) {
             setIsEditing(true); // Freeze the modal
             try {
-                await editEmployee(
+                // Call the API to save changes
+                const updatedEmployee = await editEmployee(
                     selectedEmployee.employee_id,
                     {
                         phone_number: selectedEmployee.phone_number,
@@ -177,11 +178,12 @@ const EmployeesPage = () => {
                 // Update the local state with the edited employee
                 setEmployees((prevEmployees) =>
                     prevEmployees.map((employee) =>
-                        employee.employee_id === selectedEmployee.employee_id
+                        employee.employee_id === updatedEmployee.employee_id
                             ? {
                                   ...employee,
-                                  phone_number: selectedEmployee.phone_number,
-                                  emp_status: selectedEmployee.emp_status,
+                                  phone_number: updatedEmployee.phone_number,
+                                  enroll_status: updatedEmployee.enroll_status,
+                                  emp_status: updatedEmployee.emp_status,
                               }
                             : employee
                     )
@@ -365,7 +367,7 @@ const EmployeesPage = () => {
                         <Typography id="edit-employee-modal" variant="h6" component="h2" gutterBottom>
                             Edit Employee
                         </Typography>
-                        {selectedEmployee && (
+                         {selectedEmployee && (
                             <>
                                 <TextField
                                     label="Employee ID"
@@ -394,6 +396,31 @@ const EmployeesPage = () => {
                                             setSelectedEmployee({
                                                 ...selectedEmployee,
                                                 emp_status: e.target.checked ? 'Terminated' : 'Active',
+                                            })
+                                        }
+                                    />
+                                </Box>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        marginTop: 2,
+                                        color: 'blue', // Highlight Reset Enroll in blue
+                                    }}
+                                >
+                                    <Typography sx={{ marginRight: 2 }}>Reset Enroll</Typography>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedEmployee.enroll_status === 'New'}
+                                        disabled={
+                                            (selectedEmployee.enroll_status === 'New' && selectedEmployee.emp_status === 'Active')  || // Disable if already "New"
+                                            selectedEmployee.emp_status === 'Terminated' || // Disable if "Terminated"
+                                            (selectedEmployee.enroll_status === 'Enrolled' && selectedEmployee.emp_status === 'Terminated') // Disable if "Enrolled" and "Terminated"
+                                        }
+                                        onChange={(e) =>
+                                            setSelectedEmployee({
+                                                ...selectedEmployee,
+                                                enroll_status: e.target.checked ? 'New' : 'Enrolled', // Update enroll_status
                                             })
                                         }
                                     />
