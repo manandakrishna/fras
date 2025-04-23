@@ -16,6 +16,8 @@ import {
     TextField,
     Snackbar,
     Alert,
+    Switch,
+    FormControlLabel,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MainLayout from '../layouts/MainLayout';
@@ -39,6 +41,7 @@ const EmployeesPage = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal
     const [selectedEmployee, setSelectedEmployee] = useState<{ employee_id: number; phone_number: string; emp_status: string; enroll_status: string;} | null>(null); // Selected employee for editing
     const [snackbarEditSuccessOpen, setSnackbarEditSuccessOpen] = useState(false); // State to control Snackbar visibility for edit success
+    const [showAllUsers, setShowAllUsers] = useState(false); // State to toggle between active and all users
 
     // Fetch employees from API
     const fetchEmployees = async () => {
@@ -202,7 +205,51 @@ const EmployeesPage = () => {
     };
 
     if (loading) {
-        return <Typography>Loading...</Typography>;
+        return (
+            <MainLayout>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100vh',
+                    }}
+                >
+                    <Typography variant="h6" gutterBottom>
+                        Getting Employees...
+                    </Typography>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginTop: 2,
+                        }}
+                    >
+                        <div
+                            className="spinner"
+                            style={{
+                                width: '40px',
+                                height: '40px',
+                                border: '4px solid #ccc',
+                                borderTop: '4px solid #1976d2', // Change the color here
+                                borderRadius: '50%',
+                                animation: 'spin 1s linear infinite',
+                            }}
+                        />
+                        <style>
+                            {`
+                                @keyframes spin {
+                                    0% { transform: rotate(0deg); }
+                                    100% { transform: rotate(360deg); }
+                                }
+                            `}
+                        </style>
+                    </Box>
+                </Box>
+            </MainLayout>
+        );
     }
 
     return (
@@ -211,43 +258,56 @@ const EmployeesPage = () => {
                 <Typography variant="h4" gutterBottom>
                     Employee Management
                 </Typography>
-                <Toolbar sx={{ marginBottom: 2 }}>
+                <Toolbar sx={{ marginBottom: 2, display: 'flex', justifyContent: 'space-between' }}>
                     <Button
                         variant="contained"
-                        color="primary"
+                        color="success"
                         startIcon={<AddIcon />}
                         sx={{ marginRight: 2 }}
                         onClick={handleOpenAddEmployeeModal}
                     >
                         Add Employee
                     </Button>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={showAllUsers}
+                                onChange={(e) => setShowAllUsers(e.target.checked)}
+                                color="primary"
+                            />
+                        }
+                        label={showAllUsers ? 'Show All Users' : 'Show Active Users'}
+                    />
                 </Toolbar>
 
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
-                            <TableRow>
-                                <TableCell>Employee ID</TableCell>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Phone Number</TableCell>
-                                <TableCell>Enroll Status</TableCell>
-                                <TableCell>Employee Status</TableCell>
+                            <TableRow sx={{ backgroundColor: 'grey.200' }}>
+                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Employee ID</TableCell>
+                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Name</TableCell>
+                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Phone Number</TableCell>
+                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Enroll Status</TableCell>
+                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Employee Status</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {employees.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((employee) => (
-                                <TableRow key={employee.employee_id} onClick={() => handleRowClick(employee)}>
-                                    <TableCell>{employee.employee_id}</TableCell>
-                                    <TableCell>{employee.name}</TableCell>
-                                    <TableCell>{employee.phone_number}</TableCell>
-                                    <TableCell>{employee.enroll_status}</TableCell>
-                                    <TableCell>{employee.emp_status}</TableCell>
-                                </TableRow>
-                            ))}
-                            {employees.length === 0 && (
+                            {employees
+                                .filter((employee) => showAllUsers || employee.emp_status === 'Active') // Filter based on toggle state
+                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map((employee) => (
+                                    <TableRow key={employee.employee_id} onClick={() => handleRowClick(employee)}>
+                                        <TableCell>{employee.employee_id}</TableCell>
+                                        <TableCell>{employee.name}</TableCell>
+                                        <TableCell>{employee.phone_number}</TableCell>
+                                        <TableCell>{employee.enroll_status}</TableCell>
+                                        <TableCell>{employee.emp_status}</TableCell>
+                                    </TableRow>
+                                ))}
+                            {employees.filter((employee) => showAllUsers || employee.emp_status === 'Active').length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} align="center">
-                                        No employees found.
+                                        {showAllUsers ? 'No employees found.' : 'No active employees found.'}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -258,7 +318,7 @@ const EmployeesPage = () => {
                 <TablePagination
                     rowsPerPageOptions={[10, 20, 30]}
                     component="div"
-                    count={employees.length}
+                    count={employees.filter((employee) => showAllUsers || employee.emp_status === 'Active').length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onPageChange={(event, newPage) => setPage(newPage)}
