@@ -1,20 +1,14 @@
 import React from 'react';
-import { AppBar, Box, CssBaseline, Drawer, List, ListItem, ListItemText, Toolbar, Typography, IconButton, Button } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import { AppBar, Box, CssBaseline, Drawer, List, ListItem, ListItemText, Toolbar, Typography, Button } from '@mui/material';
 import { useRouter } from 'next/router';
 
 const drawerWidth = 200;
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const router = useRouter();
-
-    const handleNavigation = (path: string) => {
-        router.push(path);
-    };
+    const [isDrawerOpen, setIsDrawerOpen] = React.useState(true);
 
     const handleLogout = () => {
-        // Add your logout logic here (e.g., clearing tokens, redirecting to login page)
-        console.log('Logout clicked');
         router.push('/login'); // Redirect to login page
     };
 
@@ -26,19 +20,12 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 position="fixed"
                 sx={{
                     zIndex: (theme) => theme.zIndex.drawer + 1,
+                    backgroundColor: '#0d47a1', // Deep blue color for a professional look
                 }}
             >
                 <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <IconButton
-                            color="inherit"
-                            aria-label="menu"
-                            edge="start"
-                            sx={{ mr: 2 }}
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        <Typography variant="h6" noWrap component="div">
+                        <Typography variant="h6" noWrap component="div" sx={{ color: '#ffffff' }}>
                             Face Recognition Attendance System
                         </Typography>
                     </Box>
@@ -48,25 +35,82 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </Toolbar>
             </AppBar>
 
-            {/* Left Navigation Drawer */}
+            {/* Drawer */}
             <Drawer
-                variant="permanent"
+                variant="persistent"
                 sx={{
-                    width: drawerWidth,
+                    width: isDrawerOpen ? drawerWidth : 60, // Adjust width based on drawer state
                     flexShrink: 0,
-                    [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+                    [`& .MuiDrawer-paper`]: {
+                        width: isDrawerOpen ? drawerWidth : 60, // Adjust width based on drawer state
+                        boxSizing: 'border-box',
+                        backgroundColor: '#1e293b', // Dark blue-gray background
+                        color: '#ffffff', // White text color
+                        marginTop: '64px', // Adjust for AppBar height
+                        position: 'fixed', // Fix the drawer below the AppBar
+                        transition: 'width 0.3s', // Smooth transition for collapsing
+                    },
                 }}
+                open={isDrawerOpen}
             >
-                <Toolbar />
-                <List>
-                    <ListItem component="button" onClick={() => handleNavigation('/')}>
-                        <ListItemText primary="Dashboard" />
+                {/* Navigation Items */}
+                <List sx={{ paddingTop: 0 }}>
+                    <ListItem
+                        component="a"
+                        href="/"
+                        sx={{
+                            cursor: 'pointer',
+                            '&:hover': { backgroundColor: '#475569' }, // Different color for hover
+                            backgroundColor: router.pathname === '/' ? '#334155' : 'inherit', // Highlight when selected
+                        }}
+                    >
+                        <ListItemText
+                            primary="Dashboard"
+                            sx={{ color: '#ffffff' }} // Bright white color
+                        />
                     </ListItem>
-                    <ListItem component="button" onClick={() => handleNavigation('/employees')}>
-                        <ListItemText primary="Employees" />
+                    <ListItem
+                        component="a"
+                        href="/employees"
+                        sx={{
+                            cursor: 'pointer',
+                            '&:hover': { backgroundColor: '#475569' }, // Different color for hover
+                            backgroundColor: router.pathname === '/employees' ? '#334155' : 'inherit', // Highlight when selected
+                        }}
+                    >
+                        <ListItemText
+                            primary="Employees"
+                            sx={{ color: '#ffffff' }} // Bright white color
+                        />
                     </ListItem>
                 </List>
             </Drawer>
+
+            {/* Toggle Button */}
+            <Box
+                sx={{
+                    position: 'fixed', // Position relative to the viewport
+                    top: '50%', // Center vertically relative to the viewport
+                    left: isDrawerOpen ? `${drawerWidth - 10}px` : '0px', // Adjust based on drawer state
+                    transform: 'translateY(-50%)',
+                    backgroundColor: '#1e293b', // Match the color of the left navigation bar
+                    borderRadius: '0 5px 5px 0',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '20px',
+                    height: '40px',
+                    color: '#ffffff', // Match the text color of the left navigation bar
+                    zIndex: 1301, // Ensure it overlays the drawer
+                    boxShadow: '0px 0px 5px rgba(8, 8, 8, 0.5)', // Add shadow for better visibility
+                }}
+                onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+            >
+                <Typography variant="body2" sx={{ color: '#ffffff', fontWeight: 'bold' }}>
+                    {isDrawerOpen ? '<' : '>'}
+                </Typography>
+            </Box>
 
             {/* Main Content Area */}
             <Box
@@ -75,8 +119,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     flexGrow: 1,
                     bgcolor: 'background.default',
                     p: 3,
-                    marginLeft: `20px`,
+                    marginLeft: isDrawerOpen ? `${drawerWidth}px` : '60px', // Adjust margin based on drawer state
                     marginTop: '64px', // Adjust for AppBar height
+                    transition: 'margin-left 0.3s', // Smooth transition for responsiveness
                 }}
             >
                 {children}
