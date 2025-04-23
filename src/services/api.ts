@@ -35,7 +35,6 @@ export const addEmployee = async (employee: { employee_id: number; name: string;
 export const editEmployee = async (employeeId: number, { enroll_status, emp_status, phone_number }: { enroll_status: string; emp_status: string; phone_number: string }) => {
     try {
         const response = await axios.put(`${API_Edit_EMPLOYEE_URL}`, { employeeId, enroll_status, emp_status, phone_number });
-        console.log('Response from editEmployee:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error editing employee:', error);
