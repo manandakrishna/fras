@@ -22,18 +22,10 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import MainLayout from '../layouts/MainLayout';
 import { getEmployees, addEmployee, editEmployee } from '@/services/api';
-<<<<<<< HEAD
-// import { createRekognitionCollection } from '@/services/faceapi';
 
 const EmployeesPage = () => {
     const [employees, setEmployees] = useState<
         { employee_id: number; name: string; phone_number: string; created_on: string; enroll_status: string; emp_status: string; persongroup_id?: string; person_id?: string }[]
-=======
-
-const EmployeesPage = () => {
-    const [employees, setEmployees] = useState<
-        { employee_id: number; name: string; phone_number: string; created_on: string; enroll_status: string; emp_status: string }[]
->>>>>>> 59a6f94c60f49d06043545d9ae380c83a8820ce7
     >([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
@@ -41,31 +33,27 @@ const EmployeesPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newEmployee, setNewEmployee] = useState({ name: '', phone: '' });
     const [errors, setErrors] = useState({ name: false, phone: false });
-    const [isAdding, setIsAdding] = useState(false); // State to freeze the modal during API call
-    const [isEditing, setIsEditing] = useState(false); // State to freeze the modal during API call
-    const [nextEmployeeId, setNextEmployeeId] = useState(1); // Variable to store the next employee ID
-    const [snackbarNewEmployeeOpen, setSnackNewEmployeebarOpen] = useState(false); // State to control Snackbar visibility
-    const [snackbarEditEmployeeOpen, setSnackEditEmployeebarOpen] = useState(false); // State to control Snackbar visibility
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false); // State for edit modal
-    const [selectedEmployee, setSelectedEmployee] = useState<{ employee_id: number; phone_number: string; emp_status: string; enroll_status: string;} | null>(null); // Selected employee for editing
-    const [snackbarEditSuccessOpen, setSnackbarEditSuccessOpen] = useState(false); // State to control Snackbar visibility for edit success
-    const [showAllUsers, setShowAllUsers] = useState(false); // State to toggle between active and all users
+    const [isAdding, setIsAdding] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [nextEmployeeId, setNextEmployeeId] = useState(1);
+    const [snackbarNewEmployeeOpen, setSnackbarNewEmployeeOpen] = useState(false);
+    const [snackbarEditSuccessOpen, setSnackbarEditSuccessOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedEmployee, setSelectedEmployee] = useState<{ employee_id: number; phone_number: string; emp_status: string; enroll_status: string } | null>(null);
+    const [showAllUsers, setShowAllUsers] = useState(false);
 
     // Fetch employees from API
     const fetchEmployees = async () => {
         try {
             const response = await getEmployees();
             const employeesData = Array.isArray(response) ? response : [response];
-
-            // Sort employees by employee_id
             employeesData.sort((a, b) => a.employee_id - b.employee_id);
-
             setEmployees(employeesData);
         } catch (error) {
             console.error('Failed to fetch employees:', error);
-            setEmployees([]); // Fallback to an empty array on error
+            setEmployees([]);
         } finally {
-            setLoading(false); // Ensure loading is set to false
+            setLoading(false);
         }
     };
 
@@ -74,51 +62,12 @@ const EmployeesPage = () => {
     }, []);
 
     // Handle modal open for adding a new employee
-<<<<<<< HEAD
-    const handleOpenAddEmployeeModal = async () => {
-        try {
-            // Call the Rekognition collection creation service
-            // const response = await createRekognitionCollection();
-            // console.log('Rekognition collection response:', response);
-    
-            // Proceed with the existing logic
-            const rowCount = employees.length;
-            const nextId = rowCount > 0 ? employees[rowCount - 1].employee_id + 1 : 1;
-            setNextEmployeeId(nextId); // Update nextEmployeeId only for Add Employee
-    
-            // Reset fields and errors
-            setNewEmployee({ name: '', phone: '' });
-            setErrors({ name: false, phone: false });
-    
-            // Open the Add Employee modal
-            setIsModalOpen(true);
-        } catch (error) {
-            console.error('Error creating Rekognition collection:', error);
-            alert('Failed to create Rekognition collection. Please try again.');
-        }
-=======
     const handleOpenAddEmployeeModal = () => {
-        // Calculate the next employee ID based on the number of rows
-        const rowCount = employees.length;
-        const nextId = rowCount > 0 ? employees[rowCount - 1].employee_id + 1 : 1;
-        setNextEmployeeId(nextId); // Update nextEmployeeId only for Add Employee
-
-        // Reset fields and errors
+        const nextId = employees.length > 0 ? employees[employees.length - 1].employee_id + 1 : 1;
+        setNextEmployeeId(nextId);
         setNewEmployee({ name: '', phone: '' });
         setErrors({ name: false, phone: false });
-
-        // Open the Add Employee modal
         setIsModalOpen(true);
->>>>>>> 59a6f94c60f49d06043545d9ae380c83a8820ce7
-    };
-
-    // Handle modal open for editing an employee
-    const handleOpenEditEmployeeModal = (employee: { employee_id: number; phone_number: string; emp_status: string; enroll_status: string }) => {
-        // Set the selected employee for editing
-        setSelectedEmployee(employee); // Use the enroll_status directly from the employee object
-
-        // Open the Edit Employee modal
-        setIsEditModalOpen(true);
     };
 
     // Handle modal close
@@ -128,64 +77,54 @@ const EmployeesPage = () => {
 
     // Handle Snackbar close
     const handleNewEmployeesSnackbarClose = () => {
-        setSnackNewEmployeebarOpen(false);
+        setSnackbarNewEmployeeOpen(false);
     };
 
     // Handle save new employee
     const handleSaveNewEmployee = async () => {
         const { name, phone } = newEmployee;
-
-        // Validate fields
         const newErrors = {
             name: name.trim() === '',
-            phone: phone.trim() === '' || !/^\d+$/.test(phone), // Ensure phone is numerical
+            phone: phone.trim() === '' || !/^\d+$/.test(phone),
         };
         setErrors(newErrors);
 
-        // If there are no errors, save the employee
         if (!newErrors.name && !newErrors.phone) {
-            setIsAdding(true); // Freeze the modal
+            setIsAdding(true);
             try {
-                // Call the addEmployee API
                 const createdEmployee = await addEmployee({
-                    employee_id: nextEmployeeId, // Include employee_id
+                    employee_id: nextEmployeeId,
                     name: newEmployee.name,
                     phone_number: newEmployee.phone,
                     created_on: new Date().toISOString(),
                 });
 
-                console.log('Employee added successfully:', createdEmployee);
-
-                // Update the employees state with the new employee
                 setEmployees((prevEmployees) => [
                     ...prevEmployees,
                     {
-                        employee_id: nextEmployeeId, // Use the calculated next employee ID
+                        employee_id: nextEmployeeId,
                         name: createdEmployee.name,
                         phone_number: createdEmployee.phone_number,
                         created_on: createdEmployee.created_on,
-                        enroll_status: 'New', // Default value
-                        emp_status: 'Active', // Default value
+                        enroll_status: 'New',
+                        emp_status: 'Active',
                     },
                 ]);
 
-                // Close the modal
                 handleCloseModal();
-
-                // Show success Snackbar
-                setSnackNewEmployeebarOpen(true);
+                setSnackbarNewEmployeeOpen(true);
             } catch (error) {
                 console.error('Failed to add employee:', error);
             } finally {
-                setIsAdding(false); // Unfreeze the modal
+                setIsAdding(false);
             }
         }
-
     };
 
     // Handle row click to open edit modal
     const handleRowClick = (employee: { employee_id: number; phone_number: string; emp_status: string; enroll_status: string }) => {
-        handleOpenEditEmployeeModal(employee);
+        setSelectedEmployee(employee);
+        setIsEditModalOpen(true);
     };
 
     // Handle edit modal close
@@ -196,42 +135,29 @@ const EmployeesPage = () => {
 
     // Handle save changes in edit modal
     const handleSaveEdit = async () => {
-        console.log('Selected Employee:', selectedEmployee);
         if (selectedEmployee) {
-            setIsEditing(true); // Freeze the modal
+            setIsEditing(true);
             try {
-                // Call the API to save changes
-                const updatedEmployee = await editEmployee(
-                    selectedEmployee.employee_id,
-                    {
-                        phone_number: selectedEmployee.phone_number,
-                        enroll_status: selectedEmployee.enroll_status,
-                        emp_status: selectedEmployee.emp_status,
-                    }
-                );
+                const updatedEmployee = await editEmployee(selectedEmployee.employee_id, {
+                    phone_number: selectedEmployee.phone_number,
+                    enroll_status: selectedEmployee.enroll_status,
+                    emp_status: selectedEmployee.emp_status,
+                });
 
-                // Update the local state with the edited employee
                 setEmployees((prevEmployees) =>
                     prevEmployees.map((employee) =>
                         employee.employee_id === updatedEmployee.employee_id
-                            ? {
-                                  ...employee,
-                                  phone_number: updatedEmployee.phone_number,
-                                  enroll_status: updatedEmployee.enroll_status,
-                                  emp_status: updatedEmployee.emp_status,
-                              }
+                            ? { ...employee, ...updatedEmployee }
                             : employee
                     )
                 );
 
                 handleCloseEditModal();
-
-                // Show success Snackbar for "Saved Changes"
                 setSnackbarEditSuccessOpen(true);
             } catch (error) {
                 console.error('Failed to update employee:', error);
             } finally {
-                setIsEditing(false); // Unfreeze the modal
+                setIsEditing(false);
             }
         }
     };
@@ -248,37 +174,7 @@ const EmployeesPage = () => {
                         height: '100vh',
                     }}
                 >
-                    <Typography variant="h6" gutterBottom>
-                        Getting Employees...
-                    </Typography>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            marginTop: 2,
-                        }}
-                    >
-                        <div
-                            className="spinner"
-                            style={{
-                                width: '40px',
-                                height: '40px',
-                                border: '4px solid #ccc',
-                                borderTop: '4px solid #1976d2', // Change the color here
-                                borderRadius: '50%',
-                                animation: 'spin 1s linear infinite',
-                            }}
-                        />
-                        <style>
-                            {`
-                                @keyframes spin {
-                                    0% { transform: rotate(0deg); }
-                                    100% { transform: rotate(360deg); }
-                                }
-                            `}
-                        </style>
-                    </Box>
+                    <Typography variant="h6">Getting Employees...</Typography>
                 </Box>
             </MainLayout>
         );
@@ -286,55 +182,33 @@ const EmployeesPage = () => {
 
     return (
         <MainLayout>
-            <Box sx={{ padding: 0,  margin: '10', maxWidth: '100%', width: '100%' }}>
+            <Box sx={{ padding: 2 }}>
                 <Typography variant="h4" gutterBottom>
                     Employee Management
                 </Typography>
                 <Toolbar sx={{ marginBottom: 2, display: 'flex', justifyContent: 'space-between' }}>
-                    <Button
-                        variant="contained"
-                        color="success"
-                        startIcon={<AddIcon />}
-                        sx={{ marginRight: 2 }}
-                        onClick={handleOpenAddEmployeeModal}
-                    >
+                    <Button variant="contained" color="success" startIcon={<AddIcon />} onClick={handleOpenAddEmployeeModal}>
                         Add Employee
                     </Button>
-<<<<<<< HEAD
-   
-=======
->>>>>>> 59a6f94c60f49d06043545d9ae380c83a8820ce7
                     <FormControlLabel
-                        control={
-                            <Switch
-                                checked={showAllUsers}
-                                onChange={(e) => setShowAllUsers(e.target.checked)}
-                                color="primary"
-                            />
-                        }
+                        control={<Switch checked={showAllUsers} onChange={() => setShowAllUsers(!showAllUsers)} />}
                         label={showAllUsers ? 'Show All Users' : 'Show Active Users'}
                     />
                 </Toolbar>
-
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
-                            <TableRow sx={{ backgroundColor: 'grey.200' }}>
-                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Employee ID</TableCell>
-                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Name</TableCell>
-                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Phone Number</TableCell>
-                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Enroll Status</TableCell>
-                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Employee Status</TableCell>
-<<<<<<< HEAD
-                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Person Group Id</TableCell>
-                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Person Id</TableCell>
-=======
->>>>>>> 59a6f94c60f49d06043545d9ae380c83a8820ce7
+                            <TableRow>
+                                <TableCell>Employee ID</TableCell>
+                                <TableCell>Name</TableCell>
+                                <TableCell>Phone Number</TableCell>
+                                <TableCell>Enroll Status</TableCell>
+                                <TableCell>Employee Status2</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {employees
-                                .filter((employee) => showAllUsers || employee.emp_status === 'Active') // Filter based on toggle state
+                                .filter((employee) => showAllUsers || employee.emp_status === 'Active')
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((employee) => (
                                     <TableRow key={employee.employee_id} onClick={() => handleRowClick(employee)}>
@@ -343,245 +217,19 @@ const EmployeesPage = () => {
                                         <TableCell>{employee.phone_number}</TableCell>
                                         <TableCell>{employee.enroll_status}</TableCell>
                                         <TableCell>{employee.emp_status}</TableCell>
-<<<<<<< HEAD
-                                        <TableCell>{employee.persongroup_id || 'N/A'}</TableCell>
-                                        <TableCell>{employee.person_id || 'N/A'}</TableCell>
-=======
->>>>>>> 59a6f94c60f49d06043545d9ae380c83a8820ce7
                                     </TableRow>
                                 ))}
-                            {employees.filter((employee) => showAllUsers || employee.emp_status === 'Active').length === 0 && (
-                                <TableRow>
-<<<<<<< HEAD
-                                    <TableCell colSpan={7} align="center">
-=======
-                                    <TableCell colSpan={5} align="center">
->>>>>>> 59a6f94c60f49d06043545d9ae380c83a8820ce7
-                                        {showAllUsers ? 'No employees found.' : 'No active employees found.'}
-                                    </TableCell>
-                                </TableRow>
-                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
-
                 <TablePagination
-                    rowsPerPageOptions={[10, 20, 30]}
                     component="div"
-                    count={employees.filter((employee) => showAllUsers || employee.emp_status === 'Active').length}
-                    rowsPerPage={rowsPerPage}
+                    count={employees.length}
                     page={page}
                     onPageChange={(event, newPage) => setPage(newPage)}
-                    onRowsPerPageChange={(event) => {
-                        setRowsPerPage(parseInt(event.target.value, 10));
-                        setPage(0);
-                    }}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={(event) => setRowsPerPage(parseInt(event.target.value, 10))}
                 />
-
-                {/* Modal for Adding Employee */}
-                <Modal
-                    open={isModalOpen}
-                    onClose={() => {
-                        if (!isAdding) {
-                            handleCloseModal(); // Only close the modal if not adding
-                        }
-                    }}
-                    aria-labelledby="add-employee-modal"
-                    aria-describedby="add-employee-modal-description"
-                >
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: 400,
-                            bgcolor: 'background.paper',
-                            boxShadow: 24,
-                            p: 4,
-                            borderRadius: 2,
-                        }}
-                    >
-                        <Typography id="add-employee-modal" variant="h6" component="h2" gutterBottom>
-                            Add New Employee
-                        </Typography>
-                        <TextField
-                            label="Name"
-                            fullWidth
-                            margin="normal"
-                            value={newEmployee.name}
-                            onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
-                            error={errors.name}
-                            helperText={errors.name ? 'Name is required' : ''}
-                            disabled={isAdding} // Disable field while adding
-                        />
-                        <TextField
-                            label="Phone Number"
-                            fullWidth
-                            margin="normal"
-                            value={newEmployee.phone}
-                            onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
-                            error={errors.phone}
-                            helperText={errors.phone ? 'Phone Number must be numerical' : ''}
-                            disabled={isAdding} // Disable field while adding
-                        />
-                        <Box sx={{ display: 'flex', flexDirection: 'column', marginTop: 2 }}>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleSaveNewEmployee}
-                                disabled={isAdding} // Disable button while adding
-                            >
-                                {isAdding ? 'Adding Employee...' : 'Save'}
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                color="secondary"
-                                onClick={handleCloseModal}
-                                sx={{ marginTop: 2 }}
-                                disabled={isAdding} // Disable cancel button while adding
-                            >
-                                Cancel
-                            </Button>
-                        </Box>
-                    </Box>
-                </Modal>
-
-                {/* Modal for Editing Employee */}
-                <Modal
-                    open={isEditModalOpen}
-                    onClose={() => {
-                        if (!isEditing) {
-                            handleCloseEditModal(); // Only close the modal if not editing
-                        }
-                    }}
-                    aria-labelledby="edit-employee-modal"
-                    aria-describedby="edit-employee-modal-description"
-                    BackdropProps={{
-                        style: { pointerEvents: isEditing ? 'none' : 'auto' }, // Disable backdrop clicks while editing
-                    }}
-                >
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: 400,
-                            bgcolor: 'background.paper',
-                            boxShadow: 24,
-                            p: 4,
-                            borderRadius: 2,
-                        }}
-                    >
-                        <Typography id="edit-employee-modal" variant="h6" component="h2" gutterBottom>
-                            Edit Employee
-                        </Typography>
-                         {selectedEmployee && (
-                            <>
-                                <TextField
-                                    label="Employee ID"
-                                    fullWidth
-                                    margin="normal"
-                                    value={selectedEmployee.employee_id}
-                                    disabled // Employee ID is not editable
-                                />
-                                <TextField
-                                    label="Phone Number"
-                                    fullWidth
-                                    margin="normal"
-                                    value={selectedEmployee.phone_number}
-                                    onChange={(e) =>
-                                        setSelectedEmployee({ ...selectedEmployee, phone_number: e.target.value })
-                                    }
-                                    disabled={isEditing} // Disable editing while saving
-                                />
-                                <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
-                                    <Typography sx={{ marginRight: 2 }}>Terminate?</Typography>
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedEmployee.emp_status === 'Terminated'}
-                                        disabled={selectedEmployee.emp_status === 'Terminated'} // Disable if already terminated
-                                        onChange={(e) =>
-                                            setSelectedEmployee({
-                                                ...selectedEmployee,
-                                                emp_status: e.target.checked ? 'Terminated' : 'Active',
-                                            })
-                                        }
-                                    />
-                                </Box>
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        marginTop: 2,
-                                        color: 'blue', // Highlight Reset Enroll in blue
-                                    }}
-                                >
-                                    <Typography sx={{ marginRight: 2 }}>Reset Enroll</Typography>
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedEmployee.enroll_status === 'New'}
-                                        disabled={
-                                            (selectedEmployee.enroll_status === 'New' && selectedEmployee.emp_status === 'Active')  || // Disable if already "New"
-                                            selectedEmployee.emp_status === 'Terminated' || // Disable if "Terminated"
-                                            (selectedEmployee.enroll_status === 'Enrolled' && selectedEmployee.emp_status === 'Terminated') // Disable if "Enrolled" and "Terminated"
-                                        }
-                                        onChange={(e) =>
-                                            setSelectedEmployee({
-                                                ...selectedEmployee,
-                                                enroll_status: e.target.checked ? 'New' : 'Enrolled', // Update enroll_status
-                                            })
-                                        }
-                                    />
-                                </Box>
-                            </>
-                        )}
-                        <Box sx={{ display: 'flex', flexDirection: 'column', marginTop: 2 }}>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                onClick={handleSaveEdit}
-                                disabled={isEditing}
-                            >
-                                {isEditing ? 'Editing Employee...' : 'Save'}
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                color="secondary"
-                                onClick={handleCloseEditModal}
-                                sx={{ marginTop: 2 }}
-                                disabled={isEditing}
-                            >
-                                Cancel
-                            </Button>
-                        </Box>
-                    </Box>
-                </Modal>
-
-                {/* Snackbar for Success Message */}
-                <Snackbar
-                    open={snackbarNewEmployeeOpen}
-                    autoHideDuration={3000} // Close after 3 seconds
-                    onClose={handleNewEmployeesSnackbarClose}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                >
-                    <Alert onClose={handleNewEmployeesSnackbarClose} severity="success" sx={{ width: '100%' }}>
-                        Employee Added Successfully
-                    </Alert>
-                </Snackbar>
-
-                {/* Snackbar for Edit Success Message */}
-                <Snackbar
-                    open={snackbarEditSuccessOpen}
-                    autoHideDuration={3000} // Close after 3 seconds
-                    onClose={() => setSnackbarEditSuccessOpen(false)}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                >
-                    <Alert onClose={() => setSnackbarEditSuccessOpen(false)} severity="success" sx={{ width: '100%' }}>
-                        Changes Saved Successfully
-                    </Alert>
-                </Snackbar>
             </Box>
         </MainLayout>
     );
