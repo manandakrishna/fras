@@ -203,7 +203,7 @@ const EmployeesPage = () => {
                                 <TableCell>Name</TableCell>
                                 <TableCell>Phone Number</TableCell>
                                 <TableCell>Enroll Status</TableCell>
-                                <TableCell>Employee Status2</TableCell>
+                                <TableCell>Employee Status</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
