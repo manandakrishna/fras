@@ -22,10 +22,11 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import MainLayout from '../layouts/MainLayout';
 import { getEmployees, addEmployee, editEmployee } from '@/services/api';
+// import { createRekognitionCollection } from '@/services/faceapi';
 
 const EmployeesPage = () => {
     const [employees, setEmployees] = useState<
-        { employee_id: number; name: string; phone_number: string; created_on: string; enroll_status: string; emp_status: string }[]
+        { employee_id: number; name: string; phone_number: string; created_on: string; enroll_status: string; emp_status: string; persongroup_id?: string; person_id?: string }[]
     >([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
@@ -66,18 +67,27 @@ const EmployeesPage = () => {
     }, []);
 
     // Handle modal open for adding a new employee
-    const handleOpenAddEmployeeModal = () => {
-        // Calculate the next employee ID based on the number of rows
-        const rowCount = employees.length;
-        const nextId = rowCount > 0 ? employees[rowCount - 1].employee_id + 1 : 1;
-        setNextEmployeeId(nextId); // Update nextEmployeeId only for Add Employee
-
-        // Reset fields and errors
-        setNewEmployee({ name: '', phone: '' });
-        setErrors({ name: false, phone: false });
-
-        // Open the Add Employee modal
-        setIsModalOpen(true);
+    const handleOpenAddEmployeeModal = async () => {
+        try {
+            // Call the Rekognition collection creation service
+            // const response = await createRekognitionCollection();
+            // console.log('Rekognition collection response:', response);
+    
+            // Proceed with the existing logic
+            const rowCount = employees.length;
+            const nextId = rowCount > 0 ? employees[rowCount - 1].employee_id + 1 : 1;
+            setNextEmployeeId(nextId); // Update nextEmployeeId only for Add Employee
+    
+            // Reset fields and errors
+            setNewEmployee({ name: '', phone: '' });
+            setErrors({ name: false, phone: false });
+    
+            // Open the Add Employee modal
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error('Error creating Rekognition collection:', error);
+            alert('Failed to create Rekognition collection. Please try again.');
+        }
     };
 
     // Handle modal open for editing an employee
@@ -254,7 +264,7 @@ const EmployeesPage = () => {
 
     return (
         <MainLayout>
-            <Box sx={{ padding: 0 }}>
+            <Box sx={{ padding: 0,  margin: '10', maxWidth: '100%', width: '100%' }}>
                 <Typography variant="h4" gutterBottom>
                     Employee Management
                 </Typography>
@@ -268,6 +278,7 @@ const EmployeesPage = () => {
                     >
                         Add Employee
                     </Button>
+   
                     <FormControlLabel
                         control={
                             <Switch
@@ -289,6 +300,8 @@ const EmployeesPage = () => {
                                 <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Phone Number</TableCell>
                                 <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Enroll Status</TableCell>
                                 <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Employee Status</TableCell>
+                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Person Group Id</TableCell>
+                                <TableCell sx={{ color: 'black', fontWeight: 'bold' }}>Person Id</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -302,11 +315,13 @@ const EmployeesPage = () => {
                                         <TableCell>{employee.phone_number}</TableCell>
                                         <TableCell>{employee.enroll_status}</TableCell>
                                         <TableCell>{employee.emp_status}</TableCell>
+                                        <TableCell>{employee.persongroup_id || 'N/A'}</TableCell>
+                                        <TableCell>{employee.person_id || 'N/A'}</TableCell>
                                     </TableRow>
                                 ))}
                             {employees.filter((employee) => showAllUsers || employee.emp_status === 'Active').length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={5} align="center">
+                                    <TableCell colSpan={7} align="center">
                                         {showAllUsers ? 'No employees found.' : 'No active employees found.'}
                                     </TableCell>
                                 </TableRow>

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Container, Typography } from '@mui/material';
 import MainLayout from '../layouts/MainLayout';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const HomePage = () => {
     return (

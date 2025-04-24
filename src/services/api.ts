@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'https://primary-production-c175.up.railway.app/webhook/4e81377d-c913-4767-a9a3-fae2d5a0aed6';
 const API_Add_EMPLOYEE_URL = `https://primary-production-c175.up.railway.app/webhook/be0da3f2-4faa-4023-89d1-060f54c889c5`;
 const API_Edit_EMPLOYEE_URL = `https://primary-production-c175.up.railway.app/webhook/278ff182-b8df-4c06-99d9-48793a83f845`;
@@ -21,9 +22,11 @@ export const getEmployees = async () => {
     }
 };
 
-
 export const addEmployee = async (employee: { employee_id: number; name: string; phone_number: string; created_on: string }) => {
     try {
+        // Call the createFacePersonGroup service with required parameters
+    
+       
         const response = await axios.post(`${API_Add_EMPLOYEE_URL}`, employee);
         return response.data; // Return the created employee data
     } catch (error) {

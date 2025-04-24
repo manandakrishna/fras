@@ -119,7 +119,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     flexGrow: 1,
                     bgcolor: 'background.default',
                     p: 3,
-                    marginLeft: isDrawerOpen ? `${drawerWidth}px` : '60px', // Adjust margin based on drawer state
+                    marginLeft: isDrawerOpen ? `10px` : '5px', // Adjust margin based on drawer state
                     marginTop: '64px', // Adjust for AppBar height
                     transition: 'margin-left 0.3s', // Smooth transition for responsiveness
                 }}
