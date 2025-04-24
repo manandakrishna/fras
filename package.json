@@ -9,15 +9,21 @@
         "lint": "eslint ."
     },
     "dependencies": {
+<<<<<<< HEAD
         "@aws-sdk/client-rekognition": "^3.787.0",
         "@azure/cognitiveservices-face": "^5.0.0",
         "@azure/ms-rest-js": "^2.7.0",
+=======
+>>>>>>> 59a6f94c60f49d06043545d9ae380c83a8820ce7
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.0",
         "@mui/icons-material": "^7.0.2",
         "@mui/material": "^7.0.2",
         "axios": "^1.8.4",
+<<<<<<< HEAD
         "dotenv": "^16.5.0",
+=======
+>>>>>>> 59a6f94c60f49d06043545d9ae380c83a8820ce7
         "latest": "^0.2.0",
         "next": "latest",
         "react": "latest",
