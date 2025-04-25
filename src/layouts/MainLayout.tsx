@@ -83,6 +83,20 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                             sx={{ color: '#ffffff' }} // Bright white color
                         />
                     </ListItem>
+                    <ListItem
+                        component="a"
+                        href="/facerelated"
+                        sx={{
+                            cursor: 'pointer',
+                            '&:hover': { backgroundColor: '#475569' }, // Different color for hover
+                            backgroundColor: router.pathname === '/facerelated' ? '#334155' : 'inherit', // Highlight when selected
+                        }}
+                    >
+                        <ListItemText
+                            primary="Face Related"
+                            sx={{ color: '#ffffff' }} // Bright white color
+                        />
+                    </ListItem>
                 </List>
             </Drawer>
 

@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MainLayout from '../layouts/MainLayout';
-import { getEmployees, addEmployee, editEmployee } from '@/services/api';
+import { getEmployees, addEmployee, editEmployee } from '@/services/apiEmployee';
 
 const EmployeesPage = () => {
     const [employees, setEmployees] = useState<
@@ -279,12 +279,12 @@ const EmployeesPage = () => {
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
-                            <TableRow>
-                                <TableCell>Employee ID</TableCell>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Phone Number</TableCell>
-                                <TableCell>Enroll Status</TableCell>
-                                <TableCell>Employee Status</TableCell>
+                            <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                                <TableCell><strong>Employee ID</strong></TableCell>
+                                <TableCell><strong>Name</strong></TableCell>
+                                <TableCell><strong>Phone Number</strong></TableCell>
+                                <TableCell><strong>Enroll Status</strong></TableCell>
+                                <TableCell><strong>Employee Status</strong></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>

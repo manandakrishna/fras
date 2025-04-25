@@ -9,21 +9,23 @@
         "lint": "eslint ."
     },
     "dependencies": {
-"@aws-sdk/client-rekognition": "^3.787.0",
-"@azure/cognitiveservices-face": "^5.0.0",
-"@azure/ms-rest-js": "^2.7.0",
-"@emotion/react": "^11.14.0",
-"@emotion/styled": "^11.14.0",
-"@mui/icons-material": "^7.0.2",
-"@mui/material": "^7.0.2",
-"axios": "^1.8.4",
-"dotenv": "^16.5.0",
+        "@aws-sdk/client-rekognition": "^3.787.0",
+        "@azure/cognitiveservices-face": "^5.0.0",
+        "@azure/ms-rest-js": "^2.7.0",
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.0",
+        "@mui/icons-material": "^7.0.2",
+        "@mui/material": "^7.0.2",
+        "aws-sdk": "^2.1692.0",
+        "axios": "^1.8.4",
+        "dotenv": "^16.5.0",
         "latest": "^0.2.0",
         "next": "latest",
         "react": "latest",
         "react-dom": "latest"
     },
     "devDependencies": {
+        "@types/aws-sdk": "^0.0.42",
         "@types/node": "22.14.1",
         "eslint": "latest",
         "eslint-config-next": "latest"

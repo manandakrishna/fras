@@ -1,10 +1,11 @@
 import axios from 'axios';
+import AWS from 'aws-sdk';
 
 
-if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-    console.error('AWS credentials are not defined. Please check your .env file.');
-    throw new Error('Missing AWS credentials');
-}
+// if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+//     console.error('AWS credentials are not defined. Please check your .env file.');
+//     throw new Error('Missing AWS credentials');
+// }
 
 
 
@@ -37,3 +38,37 @@ if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
 //         throw error;
 //     }
 // };
+AWS.config.update({
+    region: 'us-east-1', // Update to your AWS region
+    accessKeyId: "AKIASYJXA34PL5SNA5HQ",
+    secretAccessKey: "do8RkrN8b9VUzeB+Q7SiVaZPw5mBsrlI0KVkqFcW",
+});
+
+const rekognition = new AWS.Rekognition();
+
+export const listCollections = async () => {
+    try {
+        const params = {};
+        const response = await rekognition.listCollections(params).promise();
+        console.log('Collections:', response.CollectionIds);
+        return response.CollectionIds; // Return the list of collection IDs
+    } catch (error) {
+        console.error('Error listing collections:', (error as Error).message);
+        throw error;
+    }
+};
+
+export const createCollection = async (collectionId: string) => {
+    try {
+        const params = {
+            CollectionId: collectionId,
+        };
+        const response = await rekognition.createCollection(params).promise();
+        console.log('Collection created successfully:', response);
+        return response; // Return the response from AWS Rekognition
+    } catch (error) {
+        console.error('Error creating collection:', (error as Error).message);
+        throw error;
+    }
+};
+
