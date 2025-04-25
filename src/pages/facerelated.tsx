@@ -3,8 +3,9 @@ import React from 'react';
 import MainLayout from '../layouts/MainLayout';
 import { useEffect, useState } from 'react';
 import { listCollections, createCollection } from '../services/faceapi';
+import { Config } from 'aws-sdk';
 
-const AttendancePage = () => {
+const FaceRelated = () => {
     const [collections, setCollections] = useState<string[]>([]);
 
     useEffect(() => {
@@ -57,4 +58,4 @@ const AttendancePage = () => {
     );
 };
 
-export default AttendancePage;
+export default FaceRelated;
