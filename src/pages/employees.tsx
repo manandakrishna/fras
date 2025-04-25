@@ -18,6 +18,7 @@ import {
     Alert,
     Switch,
     FormControlLabel,
+    Checkbox,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MainLayout from '../layouts/MainLayout';
@@ -377,64 +378,93 @@ const EmployeesPage = () => {
                 </Box>
             </Modal>
 
-            {/* Edit Employee Modal */}
-            <Modal
-                open={isEditModalOpen}
-                onClose={handleCloseEditModal}
-                aria-labelledby="edit-employee-modal-title"
-                aria-describedby="edit-employee-modal-description"
+           {/* Edit Employee Modal */}
+           <Modal
+    open={isEditModalOpen}
+    onClose={handleCloseEditModal}
+    aria-labelledby="edit-employee-modal-title"
+    aria-describedby="edit-employee-modal-description"
+>
+    <Box
+        sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+        }}
+    >
+        <Typography id="edit-employee-modal-title" variant="h6" component="h2">
+            Edit Employee
+        </Typography>
+        <TextField
+            fullWidth
+            label="Name"
+            value={selectedEmployee?.name || ''}
+            InputProps={{
+                readOnly: true,
+            }}
+            margin="normal"
+        />
+        <TextField
+            fullWidth
+            label="Phone Number"
+            value={selectedEmployee?.phone_number || ''}
+            onChange={(e) =>
+                setSelectedEmployee((prev) =>
+                    prev ? { ...prev, phone_number: e.target.value } : null
+                )
+            }
+            margin="normal"
+        />
+        <FormControlLabel
+            control={
+                <Checkbox
+                    checked={selectedEmployee?.enroll_status === 'New'}
+                    onChange={(e) =>
+                        setSelectedEmployee((prev) =>
+                            prev ? { ...prev, enroll_status: e.target.checked ? 'New' : 'Enrolled' } : null
+                        )
+                    }
+                    disabled= {selectedEmployee?.enroll_status === 'New' || 
+                    selectedEmployee?.emp_status === 'Terminated' // Disable if enroll_status is "New" }
+                }
+                />
+            }
+            label="Reset Enrollment"
+        />
+        <FormControlLabel
+            control={
+                <Checkbox
+                    disabled={selectedEmployee?.emp_status === 'Terminated'}
+                    onChange={(e) =>
+                        setSelectedEmployee((prev) =>
+                            prev ? { ...prev, emp_status: e.target.checked ? 'Terminated' : 'Active' } : null
+                        )
+                    }
+                />
+            }
+            label="Terminate?"
+        />
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+            <Button onClick={handleCloseEditModal} sx={{ mr: 1 }}>
+                Cancel
+            </Button>
+            <Button
+                variant="contained"
+                color="success"
+                onClick={handleSaveEdit}
+                disabled={isEditing}
             >
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: 400,
-                        bgcolor: 'background.paper',
-                        boxShadow: 24,
-                        p: 4,
-                        borderRadius: 2,
-                    }}
-                >
-                    <Typography id="edit-employee-modal-title" variant="h6" component="h2">
-                        Edit Employee
-                    </Typography>
-                    <TextField
-                        fullWidth
-                        label="Name"
-                        value={selectedEmployee?.name || ''}
-                        InputProps={{
-                            readOnly: true,
-                        }}
-                        margin="normal"
-                    />
-                    <TextField
-                        fullWidth
-                        label="Phone Number"
-                        value={selectedEmployee?.phone_number || ''}
-                        onChange={(e) =>
-                            setSelectedEmployee((prev) =>
-                                prev ? { ...prev, phone_number: e.target.value } : null
-                            )
-                        }
-                        margin="normal"
-                    />
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                        <Button onClick={handleCloseEditModal} sx={{ mr: 1 }}>
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="contained"
-                            color="success"
-                            onClick={handleSaveEdit}
-                            disabled={isEditing}
-                        >
-                            {isEditing ? 'Saving...' : 'Save'}
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
+                {isEditing ? 'Saving...' : 'Save'}
+            </Button>
+        </Box>
+    </Box>
+</Modal>
         </MainLayout>
     );
 };
